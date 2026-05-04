@@ -63,3 +63,7 @@ shape = SubResource("WorldBoundaryShape2D_ym5sv")
 
 [node name="player" parent="." unique_id=1402298697 instance=ExtResource("4_xwcet")]
 position = Vector2(576, 343)
+
+[node name="PopupMenu" type="PopupMenu" parent="." unique_id=1740840791]
+
+[connection signal="id_pressed" from="PopupMenu" to="player" method="_on_popup_menu_id_pressed"]
