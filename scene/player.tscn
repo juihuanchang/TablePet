@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://cfs5wa1swsfx0" path="res://resource/sprite/Lancer_Run.png" id="4_2fvbb"]
 [ext_resource type="Texture2D" uid="uid://h5d0if0ogng2" path="res://resource/sprite/Lancer_Run_Backward.png" id="5_ml7e8"]
 [ext_resource type="Script" uid="uid://d3c7k47cnakap" path="res://script/animated_sprite_2d.gd" id="6_ihjo1"]
+[ext_resource type="Script" uid="uid://d2pux8u13c8ty" path="res://script/selection_circle.gd" id="7_hp4bs"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_qpk70"]
 atlas = ExtResource("2_hp4bs")
@@ -261,3 +262,7 @@ wait_time = 5.0
 autostart = true
 
 [node name="MoveTime" type="Timer" parent="." unique_id=1341775568]
+
+[node name="SelectionCircle" type="Node2D" parent="." unique_id=878348974]
+visible = false
+script = ExtResource("7_hp4bs")
