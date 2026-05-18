@@ -66,4 +66,40 @@ position = Vector2(576, 343)
 
 [node name="PopupMenu" type="PopupMenu" parent="." unique_id=1740840791]
 
+[node name="RadialMenu" type="Control" parent="." unique_id=902199860]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="SayHiButton" type="Button" parent="RadialMenu" unique_id=1075604836]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="ShowPositionButton" type="Button" parent="RadialMenu" unique_id=1802931041]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="RandomMoveButton" type="Button" parent="RadialMenu" unique_id=366075906]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="MoveToRightTopButton" type="Button" parent="RadialMenu" unique_id=960709824]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="MoveToLeftTopButton" type="Button" parent="RadialMenu" unique_id=225148801]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="DeleteButton" type="Button" parent="RadialMenu" unique_id=71421191]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
 [connection signal="id_pressed" from="PopupMenu" to="player" method="_on_popup_menu_id_pressed"]
