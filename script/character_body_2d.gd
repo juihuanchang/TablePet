@@ -1,26 +1,10 @@
 extends CharacterBody2D
 
-# --- 常數與列舉 ---
-const SPEED = 300.0
+var SPEED = 300.0
 
-enum PopupIds {
-	SAY_HI = 100,
-	SHOW_POSITION,
-	RANDOM_MOVE,
-	DELETE_PLAYER,
-}
-
-# --- 變數宣告 ---
-var target_position: Vector2
-var is_wandering = false
-var move_time = 0.0
-var is_selected = false
+var _target_position: Vector2
+var is_wandering := false
 var _last_mouse_position: Vector2
-
-# --- 節點引用 ---
-@onready var _pm: PopupMenu = $"../PopupMenu"
-@onready var selection_circle = $SelectionCircle
-@onready var wandering_timer = $WanderingTimer
 
 @onready var radial_menu: Control = $"../RadialMenu"
 
@@ -31,17 +15,16 @@ var _last_mouse_position: Vector2
 @onready var move_to_lefttop_button: Button = $"../RadialMenu/MoveToLeftTopButton"
 @onready var delete_button: Button = $"../RadialMenu/DeleteButton"
 
+
 func _ready() -> void:
 	input_pickable = true
-	target_position = global_position
+
+	
+
+	_target_position = global_position
+
 	radial_menu.visible = false
 
-	# 初始化計時器
-	wandering_timer.timeout.connect(_on_timer_timeout)
-	wandering_timer.wait_time = randf_range(5.0, 8.0)
-	wandering_timer.start()
-	
-	# 初始化右鍵選單
 	say_hi_button.text = "Hi"
 	show_position_button.text = "Pos"
 	random_move_button.text = "Rnd"
@@ -49,89 +32,79 @@ func _ready() -> void:
 	move_to_lefttop_button.text = "LT"
 	delete_button.text = "Del"
 
-	say_hi_button.pressed.connect(_on_say_hi_pressed)
-	show_position_button.pressed.connect(_on_show_position_pressed)
-	random_move_button.pressed.connect(_on_random_move_pressed)
-	move_to_righttop_button.pressed.connect(_on_move_to_righttop_pressed)
-	move_to_lefttop_button.pressed.connect(_on_move_to_lefttop_pressed)
-	delete_button.pressed.connect(_on_delete_pressed)
+	if not say_hi_button.pressed.is_connected(_on_say_hi_pressed):
+		say_hi_button.pressed.connect(_on_say_hi_pressed)
+
+	if not show_position_button.pressed.is_connected(_on_show_position_pressed):
+		show_position_button.pressed.connect(_on_show_position_pressed)
+
+	if not random_move_button.pressed.is_connected(_on_random_move_pressed):
+		random_move_button.pressed.connect(_on_random_move_pressed)
+
+	if not move_to_righttop_button.pressed.is_connected(_on_move_to_righttop_pressed):
+		move_to_righttop_button.pressed.connect(_on_move_to_righttop_pressed)
+
+	if not move_to_lefttop_button.pressed.is_connected(_on_move_to_lefttop_pressed):
+		move_to_lefttop_button.pressed.connect(_on_move_to_lefttop_pressed)
+
+	if not delete_button.pressed.is_connected(_on_delete_pressed):
+		delete_button.pressed.connect(_on_delete_pressed)
 
 	setup_radial_buttons()
 
-func _physics_process(delta: float) -> void:
-	# 鍵盤/搖桿手動輸入
+
+func _physics_process(_delta: float) -> void:
 	var directionX := Input.get_axis("ui_left", "ui_right")
 	var directionY := Input.get_axis("ui_up", "ui_down")
 	var input_direction := Vector2(directionX, directionY)
 
 	if input_direction != Vector2.ZERO:
-		# 手動輸入時，中斷自動隨機移動
 		is_wandering = false
 		velocity = input_direction.normalized() * SPEED
 	else:
 		if is_wandering:
-			# 自動隨機移動邏輯
-			move_time += delta
-			var direction_to_target = target_position - global_position
-			var dist = direction_to_target.length()
-			
-			# 到達目的地或超時，停止移動
-			if dist < 10 or move_time > 1.5:
-				is_wandering = false
+			var direction_to_target := _target_position - global_position
+
+			if direction_to_target.length() < 5:
+				global_position = _target_position
 				velocity = Vector2.ZERO
-				move_time = 0.0
+				is_wandering = false
 				print("arrived")
 			else:
 				velocity = direction_to_target.normalized() * SPEED
 		else:
-			# 沒有輸入也沒有自動移動時，平滑減速至停止
 			velocity = velocity.move_toward(Vector2.ZERO, SPEED)
 
 	move_and_slide()
 
-# --- 統一的移動入口 ---
-func _start_walking_to(dest: Vector2) -> void:
-	target_position = dest
-	is_wandering = true
-	move_time = 0.0
-	print("walk to: ", target_position)
+	if radial_menu.visible:
+		update_radial_menu_position()
 
-# --- 定時器觸發（局部偏移隨機移動） ---
-func _on_timer_timeout() -> void:
-	var wandering_x = randf_range(-100.0, 100.0)
-	var wandering_y = randf_range(-80.0, 80.0)
-	var next_position = position + Vector2(wandering_x, wandering_y)
-	
-	# 限制移動範圍在場景內
-	_start_walking_to(Vector2(
-		clamp(next_position.x, 56.0, 1104.0),
-		clamp(next_position.y, 192.0, 576.0)
-	))
-	
-	# 重設下一次觸發時間
-	wandering_timer.wait_time = randf_range(5.0, 8.0)
-	wandering_timer.start()
 
-# --- 滑鼠與選單事件 ---
 func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> void:
-	if event is InputEventMouseButton and event.is_pressed():
-		if event.button_index == MOUSE_BUTTON_RIGHT:
-			_last_mouse_position = get_global_mouse_position()
-			show_radial_menu()
+	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_RIGHT:
+		print("右鍵點到 player")
 
-		elif event.button_index == MOUSE_BUTTON_LEFT:
-			toggle_selection(true)
+		_last_mouse_position = get_global_mouse_position()
+		show_radial_menu()
+		
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
+		_target_position = get_global_mouse_position()
+		is_wandering = true
+		hide_radial_menu()
+		print("walk to mouse: ", _target_position)
+
 
 func show_radial_menu() -> void:
 	radial_menu.visible = true
 
-	var screen_pos := get_global_transform_with_canvas().origin
-	radial_menu.global_position = screen_pos
+	update_radial_menu_position()
 
-	var radius := 90.0
-	var button_size := Vector2(55, 55)
+	var button_size := Vector2(40, 40)
+	var radius := 60.0
 
-	var buttons := [
+	var buttons: Array[Button] = [
 		say_hi_button,
 		show_position_button,
 		random_move_button,
@@ -141,11 +114,22 @@ func show_radial_menu() -> void:
 	]
 
 	for i in range(buttons.size()):
-		var angle := TAU * i / buttons.size() - PI / 2
-		var offset := Vector2(cos(angle), sin(angle)) * radius
-
+		buttons[i].custom_minimum_size = button_size
 		buttons[i].size = button_size
-		buttons[i].position = offset - button_size / 2
+
+		var start_angle := -PI / 2.0
+		var end_angle := PI / 2.0
+		var t := float(i) / float(buttons.size() - 1)
+		var angle := lerpf(start_angle, end_angle, t)
+
+		var offset := Vector2(cos(angle), sin(angle)) * radius
+		buttons[i].position = offset - button_size / 2.0
+
+
+func update_radial_menu_position() -> void:
+	var screen_pos := get_global_transform_with_canvas().origin
+	radial_menu.global_position = screen_pos + Vector2(30, 0)
+
 
 func setup_radial_buttons() -> void:
 	var buttons := [
@@ -158,8 +142,8 @@ func setup_radial_buttons() -> void:
 	]
 
 	for button in buttons:
-		button.custom_minimum_size = Vector2(55, 55)
-		button.size = Vector2(55, 55)
+		button.custom_minimum_size = Vector2(50, 50)
+		button.size = Vector2(50, 50)
 
 		var normal_style := StyleBoxFlat.new()
 		normal_style.bg_color = Color(0.15, 0.25, 0.45, 0.9)
@@ -181,6 +165,9 @@ func setup_radial_buttons() -> void:
 		button.add_theme_color_override("font_hover_color", Color.WHITE)
 		button.add_theme_color_override("font_pressed_color", Color.WHITE)
 
+		button.add_theme_font_size_override("font_size", 14)
+
+
 func hide_radial_menu() -> void:
 	radial_menu.visible = false
 
@@ -191,31 +178,31 @@ func _on_say_hi_pressed() -> void:
 
 
 func _on_show_position_pressed() -> void:
-	print(_last_mouse_position)
+	print("player position: ", global_position)
 	hide_radial_menu()
 
 
 func _on_random_move_pressed() -> void:
-	target_position = Vector2(
+	_target_position = Vector2(
 		randf_range(100, 800),
 		randf_range(100, 500)
 	)
 	is_wandering = true
-	print("walk to: ", target_position)
+	print("walk to random: ", _target_position)
 	hide_radial_menu()
 
 
 func _on_move_to_righttop_pressed() -> void:
-	target_position = Vector2(1152, 0)
+	_target_position = Vector2(1152, 0)
 	is_wandering = true
-	print("move to right top: ", target_position)
+	print("move to right top: ", _target_position)
 	hide_radial_menu()
 
 
 func _on_move_to_lefttop_pressed() -> void:
-	target_position = Vector2(0, 0)
+	_target_position = Vector2(0, 0)
 	is_wandering = true
-	print("move to left top: ", target_position)
+	print("move to left top: ", _target_position)
 	hide_radial_menu()
 
 
@@ -223,14 +210,3 @@ func _on_delete_pressed() -> void:
 	print("delete player")
 	hide_radial_menu()
 	queue_free()
-
-
-func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
-		toggle_selection(false)
-
-# --- 選取狀態切換 ---
-func toggle_selection(selected: bool) -> void:
-	is_selected = selected
-	if selection_circle:
-		selection_circle.visible = selected
