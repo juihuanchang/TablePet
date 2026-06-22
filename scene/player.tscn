@@ -149,7 +149,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_d218c")
 }],
-"loop": false,
+"loop": 0,
 "name": &"attack",
 "speed": 10.0
 }, {
@@ -190,7 +190,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_jrd6n")
 }],
-"loop": true,
+"loop": 1,
 "name": &"default",
 "speed": 10.0
 }, {
@@ -213,7 +213,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_abp7u")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run",
 "speed": 10.0
 }, {
@@ -236,7 +236,7 @@ animations = [{
 "duration": 1.0,
 "texture": SubResource("AtlasTexture_0jy4g")
 }],
-"loop": true,
+"loop": 1,
 "name": &"run_backward",
 "speed": 10.0
 }]
@@ -266,3 +266,5 @@ autostart = true
 [node name="SelectionCircle" type="Node2D" parent="." unique_id=878348974]
 visible = false
 script = ExtResource("7_hp4bs")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=1808741171]
