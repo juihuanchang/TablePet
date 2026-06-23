@@ -5,6 +5,7 @@ var SPEED = 300.0
 var _target_position: Vector2
 var is_wandering := false
 var _last_mouse_position: Vector2
+var radial_side := 1 # 1 = 右邊，-1 = 左邊
 
 @onready var radial_menu: Control = $"../RadialMenu"
 
@@ -18,8 +19,6 @@ var _last_mouse_position: Vector2
 
 func _ready() -> void:
 	input_pickable = true
-
-	
 
 	_target_position = global_position
 
@@ -79,6 +78,7 @@ func _physics_process(_delta: float) -> void:
 
 	if radial_menu.visible:
 		update_radial_menu_position()
+		update_radial_button_positions()
 
 
 func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> void:
@@ -87,7 +87,8 @@ func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> vo
 
 		_last_mouse_position = get_global_mouse_position()
 		show_radial_menu()
-		
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.is_pressed() and event.button_index == MOUSE_BUTTON_LEFT:
 		_target_position = get_global_mouse_position()
@@ -98,9 +99,11 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func show_radial_menu() -> void:
 	radial_menu.visible = true
-
 	update_radial_menu_position()
+	update_radial_button_positions()
 
+
+func update_radial_button_positions() -> void:
 	var button_size := Vector2(40, 40)
 	var radius := 60.0
 
@@ -122,17 +125,27 @@ func show_radial_menu() -> void:
 		var t := float(i) / float(buttons.size() - 1)
 		var angle := lerpf(start_angle, end_angle, t)
 
-		var offset := Vector2(cos(angle), sin(angle)) * radius
+		var offset := Vector2(cos(angle) * radial_side, sin(angle)) * radius
 		buttons[i].position = offset - button_size / 2.0
 
 
 func update_radial_menu_position() -> void:
-	var screen_pos := get_global_transform_with_canvas().origin
-	radial_menu.global_position = screen_pos + Vector2(30, 0)
+	var viewport_size := get_viewport_rect().size
+	var button_area_width := 100.0
+
+	var right_position := global_position + Vector2(40, -20)
+	var left_position := global_position + Vector2(-40, -20)
+
+	if right_position.x + button_area_width > viewport_size.x:
+		radial_side = -1
+		radial_menu.global_position = left_position
+	else:
+		radial_side = 1
+		radial_menu.global_position = right_position
 
 
 func setup_radial_buttons() -> void:
-	var buttons := [
+	var buttons: Array[Button] = [
 		say_hi_button,
 		show_position_button,
 		random_move_button,
@@ -142,8 +155,8 @@ func setup_radial_buttons() -> void:
 	]
 
 	for button in buttons:
-		button.custom_minimum_size = Vector2(50, 50)
-		button.size = Vector2(50, 50)
+		button.custom_minimum_size = Vector2(40, 40)
+		button.size = Vector2(40, 40)
 
 		var normal_style := StyleBoxFlat.new()
 		normal_style.bg_color = Color(0.15, 0.25, 0.45, 0.9)
@@ -165,7 +178,7 @@ func setup_radial_buttons() -> void:
 		button.add_theme_color_override("font_hover_color", Color.WHITE)
 		button.add_theme_color_override("font_pressed_color", Color.WHITE)
 
-		button.add_theme_font_size_override("font_size", 14)
+		button.add_theme_font_size_override("font_size", 13)
 
 
 func hide_radial_menu() -> void:
