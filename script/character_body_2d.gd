@@ -21,7 +21,9 @@ var radial_side := 1 # 1 = 右邊，-1 = 左邊
 @onready var move_to_lefttop_button: Button = $"../RadialMenu/MoveToLeftTopButton"
 @onready var feed_button: Button = $"../RadialMenu/FeedButton"
 @onready var delete_button: Button = $"../RadialMenu/DeleteButton"
+
 @onready var hunger_bar: ProgressBar = $HungerBar
+@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
 
 
 func _ready() -> void:
@@ -71,6 +73,11 @@ func _physics_process(delta: float) -> void:
 	var directionY := Input.get_axis("ui_up", "ui_down")
 	var input_direction := Vector2(directionX, directionY)
 
+	if directionX < 0:
+		animated_sprite.flip_h = true
+	elif directionX > 0:
+		animated_sprite.flip_h = false
+
 	if input_direction != Vector2.ZERO:
 		is_wandering = false
 		velocity = input_direction.normalized() * SPEED
@@ -85,6 +92,11 @@ func _physics_process(delta: float) -> void:
 				print("arrived")
 			else:
 				velocity = direction_to_target.normalized() * SPEED
+
+				if velocity.x < 0:
+					animated_sprite.flip_h = true
+				elif velocity.x > 0:
+					animated_sprite.flip_h = false
 		else:
 			velocity = velocity.move_toward(Vector2.ZERO, SPEED)
 
