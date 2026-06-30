@@ -2,6 +2,11 @@ extends CharacterBody2D
 
 var SPEED = 300.0
 
+@export var max_hunger := 100.0
+@export var hunger_loss_per_second := 2.0
+@export var feed_amount := 30.0
+
+var hunger := max_hunger
 var _target_position: Vector2
 var is_wandering := false
 var _last_mouse_position: Vector2
@@ -14,7 +19,9 @@ var radial_side := 1 # 1 = 右邊，-1 = 左邊
 @onready var random_move_button: Button = $"../RadialMenu/RandomMoveButton"
 @onready var move_to_righttop_button: Button = $"../RadialMenu/MoveToRightTopButton"
 @onready var move_to_lefttop_button: Button = $"../RadialMenu/MoveToLeftTopButton"
+@onready var feed_button: Button = $"../RadialMenu/FeedButton"
 @onready var delete_button: Button = $"../RadialMenu/DeleteButton"
+@onready var hunger_bar: ProgressBar = $HungerBar
 
 
 func _ready() -> void:
@@ -29,6 +36,7 @@ func _ready() -> void:
 	random_move_button.text = "Rnd"
 	move_to_righttop_button.text = "RT"
 	move_to_lefttop_button.text = "LT"
+	feed_button.text = "Feed"
 	delete_button.text = "Del"
 
 	if not say_hi_button.pressed.is_connected(_on_say_hi_pressed):
@@ -46,13 +54,19 @@ func _ready() -> void:
 	if not move_to_lefttop_button.pressed.is_connected(_on_move_to_lefttop_pressed):
 		move_to_lefttop_button.pressed.connect(_on_move_to_lefttop_pressed)
 
+	if not feed_button.pressed.is_connected(_on_feed_pressed):
+		feed_button.pressed.connect(_on_feed_pressed)
+
 	if not delete_button.pressed.is_connected(_on_delete_pressed):
 		delete_button.pressed.connect(_on_delete_pressed)
 
 	setup_radial_buttons()
+	setup_hunger_bar()
 
 
-func _physics_process(_delta: float) -> void:
+func _physics_process(delta: float) -> void:
+	update_hunger(delta)
+
 	var directionX := Input.get_axis("ui_left", "ui_right")
 	var directionY := Input.get_axis("ui_up", "ui_down")
 	var input_direction := Vector2(directionX, directionY)
@@ -113,6 +127,7 @@ func update_radial_button_positions() -> void:
 		random_move_button,
 		move_to_righttop_button,
 		move_to_lefttop_button,
+		feed_button,
 		delete_button
 	]
 
@@ -151,6 +166,7 @@ func setup_radial_buttons() -> void:
 		random_move_button,
 		move_to_righttop_button,
 		move_to_lefttop_button,
+		feed_button,
 		delete_button
 	]
 
@@ -185,6 +201,27 @@ func hide_radial_menu() -> void:
 	radial_menu.visible = false
 
 
+func setup_hunger_bar() -> void:
+	hunger_bar.max_value = max_hunger
+	hunger_bar.value = hunger
+
+	var background_style := StyleBoxFlat.new()
+	background_style.bg_color = Color(0.12, 0.08, 0.04, 0.8)
+	background_style.set_corner_radius_all(8)
+
+	var fill_style := StyleBoxFlat.new()
+	fill_style.bg_color = Color(0.95, 0.62, 0.18, 0.95)
+	fill_style.set_corner_radius_all(8)
+
+	hunger_bar.add_theme_stylebox_override("background", background_style)
+	hunger_bar.add_theme_stylebox_override("fill", fill_style)
+
+
+func update_hunger(delta: float) -> void:
+	hunger = clampf(hunger - hunger_loss_per_second * delta, 0.0, max_hunger)
+	hunger_bar.value = hunger
+
+
 func _on_say_hi_pressed() -> void:
 	print("hi")
 	hide_radial_menu()
@@ -216,6 +253,13 @@ func _on_move_to_lefttop_pressed() -> void:
 	_target_position = Vector2(0, 0)
 	is_wandering = true
 	print("move to left top: ", _target_position)
+	hide_radial_menu()
+
+
+func _on_feed_pressed() -> void:
+	hunger = clampf(hunger + feed_amount, 0.0, max_hunger)
+	hunger_bar.value = hunger
+	print("feed player, hunger: ", hunger, "/", max_hunger)
 	hide_radial_menu()
 
 

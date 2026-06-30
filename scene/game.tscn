@@ -23,7 +23,7 @@ distance = -1114.0165
 script = ExtResource("1_5kiuu")
 
 [node name="background" type="Sprite2D" parent="." unique_id=724664005]
-position = Vector2(576, 324.75)
+position = Vector2(576, 323.75)
 scale = Vector2(1.0434783, 1.0410628)
 texture = ExtResource("2_17rxn")
 
@@ -91,6 +91,11 @@ offset_right = 8.0
 offset_bottom = 8.0
 
 [node name="MoveToLeftTopButton" type="Button" parent="RadialMenu" unique_id=225148801]
+layout_mode = 0
+offset_right = 8.0
+offset_bottom = 8.0
+
+[node name="FeedButton" type="Button" parent="RadialMenu" unique_id=1538492077]
 layout_mode = 0
 offset_right = 8.0
 offset_bottom = 8.0

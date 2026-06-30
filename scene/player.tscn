@@ -267,4 +267,15 @@ autostart = true
 visible = false
 script = ExtResource("7_hp4bs")
 
+[node name="HungerBar" type="ProgressBar" parent="." unique_id=1193056426]
+offset_left = -45.0
+offset_top = -75.0
+offset_right = 45.0
+offset_bottom = -63.0
+show_percentage = false
+
 [node name="Camera2D" type="Camera2D" parent="." unique_id=1808741171]
+limit_left = 0
+limit_top = 0
+limit_right = 1152
+limit_bottom = 648
